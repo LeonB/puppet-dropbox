@@ -34,45 +34,46 @@ class dropbox::package {
   }
 
   if ($dropbox::config::user != undef and $dropbox::config::password != undef) {
-    if $::lsbdistcodename == 'squeeze' {
-      apt::source { "swellpath-squeeze":
-        location    => "http://swdeb.s3.amazonaws.com",
-        release     => "squeeze",
-        repos       => "main",
-        key         => "4EF797A0",
-        key_server  => "subkeys.pgp.net",
-        include_src => false,
-        before      => Package['nodejs'],
-      }
-    }
-    package { 'nodejs':
-      ensure => installed
-    }
+    raise Puppet::ParseError, "Dropbox for $dropbox::config::dx_uid is not authorized"
+    # if $::lsbdistcodename == 'squeeze' {
+    #   apt::source { "swellpath-squeeze":
+    #     location    => "http://swdeb.s3.amazonaws.com",
+    #     release     => "squeeze",
+    #     repos       => "main",
+    #     key         => "4EF797A0",
+    #     key_server  => "subkeys.pgp.net",
+    #     include_src => false,
+    #     before      => Package['nodejs'],
+    #   }
+    # }
+    # package { 'nodejs':
+    #   ensure => installed
+    # }
 
-    file { 'authorize.js':
-      path      => "${dropbox::config::dx_home}/authorize.js",
-      source    => 'puppet:///modules/dropbox/authorize.js',
-      owner     => $dropbox::config::dx_uid,
-    }
+    # file { 'authorize.js':
+    #   path      => "${dropbox::config::dx_home}/authorize.js",
+    #   source    => 'puppet:///modules/dropbox/authorize.js',
+    #   owner     => $dropbox::config::dx_uid,
+    # }
 
-    # kill dropbox if we need to run the authorization process
-    exec { 'kill dropbox':
-      command => 'service dropbox stop',
-      unless  => "test -f ${dropbox::config::dx_home}/.dropbox/sigstore.dbx",
-      before  => Exec['authorize-dropbox-user']
-    }
+    # # kill dropbox if we need to run the authorization process
+    # exec { 'kill dropbox':
+    #   command => 'service dropboxd stop',
+    #   unless  => "test -f ${dropbox::config::dx_home}/.dropbox/sigstore.dbx",
+    #   before  => Exec['authorize-dropbox-user']
+    # }
 
-    exec { 'authorize-dropbox-user':
-      command => "node ${dropbox::config::dx_home}/authorize.js ${dropbox::config::user} ${dropbox::config::password}",
-      user    => $dropbox::config::dx_uid,
-      group   => $dropbox::config::dx_gid,
-      cwd     => $dropbox::config::dx_home,
-      logoutput => true,
-      environment => ["HOME=${dropbox::config::dx_home}", "USER=${dropbox::config::dx_uid}"],
-      creates => "${dropbox::config::dx_home}/.dropbox/sigstore.dbx",
-      before  => Service['dropbox'],
-      require => [File['authorize.js'], Package['nodejs']]
-    }
+    # exec { 'authorize-dropbox-user':
+    #   command => "node ${dropbox::config::dx_home}/authorize.js ${dropbox::config::user} ${dropbox::config::password}",
+    #   user    => $dropbox::config::dx_uid,
+    #   group   => $dropbox::config::dx_gid,
+    #   cwd     => $dropbox::config::dx_home,
+    #   logoutput => true,
+    #   environment => ["HOME=${dropbox::config::dx_home}", "USER=${dropbox::config::dx_uid}"],
+    #   creates => "${dropbox::config::dx_home}/.dropbox/sigstore.dbx",
+    #   before  => Service['dropboxd'],
+    #   require => [File['authorize.js'], Package['nodejs']]
+    # }
   }
 
   exec { 'download-dropbox':

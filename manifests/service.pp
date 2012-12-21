@@ -1,5 +1,5 @@
 class dropbox::service {
-  service { 'dropbox':
+  service { 'dropboxd':
     ensure  => 'running',
     enable => 'true',
   }
