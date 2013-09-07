@@ -1,9 +1,11 @@
-class dropbox {
-  include stdlib
-  include dropbox::config
+class dropbox(
+	$enabled = params_lookup( 'enabled' )
+) inherits dropbox::params {
 
-  anchor { 'dropbox::begin': }
-  -> class { 'dropbox::package': }
-  ~> class { 'dropbox::service': }
-  -> anchor { 'dropbox::end': }
+  	$ensure = $enabled ? {
+  		true => present,
+  		false => absent
+  	}
+
+	include dropbox::package, dropbox::config, dropbox::service
 }

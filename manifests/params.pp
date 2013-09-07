@@ -1,5 +1,7 @@
 class dropbox::params {
-  $dx_uid = 'dropbox'
-  $dx_gid = 'dropbox'
-  $dx_home = '/opt/dropbox'
+	$enabled = true
+
+        $package_name = $::operatingsystem ? {
+                default => 'dropbox'
+        }
 }
